@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather Time Companion</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-bg: #0f0c29;
+        --gradient-mid: #302b63;
+        --gradient-end: #24243e;
+        --accent-color: #3ee7af;
+        --secondary-accent: #7f53ac;
+        --text-color: #e0e0e0;
+        --card-bg: rgba(16, 18, 27, 0.85);
+        --neon-glow: 0 0 10px rgba(62, 231, 175, 0.7),
+          0 0 20px rgba(62, 231, 175, 0.4);
+        --panel-border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      body {
+        background: linear-gradient(
+          135deg,
+          var(--primary-bg),
+          var(--gradient-mid),
+          var(--gradient-end)
+        );
+        color: var(--text-color);
+        font-family: "Segoe UI", sans-serif;
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: radial-gradient(
+            circle at 20% 30%,
+            rgba(127, 83, 172, 0.15) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 80% 70%,
+            rgba(62, 231, 175, 0.1) 0%,
+            transparent 40%
+          );
+        z-index: -1;
+      }
+
+      .grid-lines {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 1px
+          ),
+          linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 1px
+          );
+        background-size: 30px 30px;
+        z-index: -1;
+      }
+
+      .holographic-container {
+        background: var(--card-bg);
+        backdrop-filter: blur(16px);
+        border-radius: 16px;
+        border: var(--panel-border);
+        overflow: hidden;
+        position: relative;
+        z-index: 1;
+      }
+
+      .holographic-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--accent-color),
+          transparent
+        );
+        z-index: 2;
+      }
+
+      .holographic-container::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(62, 231, 175, 0.8),
+          transparent
+        );
+        border-radius: 0 0 16px 16px;
+      }
+
+      .neon-accent {
+        color: var(--accent-color);
+        text-shadow: 0 0 5px rgba(62, 231, 175, 0.7);
+      }
+
+      .purple-accent {
+        color: var(--secondary-accent);
+        text-shadow: 0 0 5px rgba(127, 83, 172, 0.7);
+      }
+
+      .header {
+        background: rgba(15, 12, 41, 0.8);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(62, 231, 175, 0.2);
+        padding: 1rem 0;
+      }
+
+      .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        position: relative;
+        display: inline-block;
+      }
+
+      .logo::after {
+        content: "";
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--accent-color),
+          transparent
+        );
+      }
+
+      .search-container {
+        position: relative;
+        max-width: 400px;
+      }
+
+      .search-input {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(62, 231, 175, 0.3);
+        border-radius: 50px;
+        color: white !important;
+        padding-left: 3rem;
+        transition: all 0.3s ease;
+      }
+
+      .search-input:focus {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 0.25rem rgba(62, 231, 175, 0.25);
+      }
+
+      .search-input::placeholder {
+        color: #888;
+        opacity: 1; 
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--accent-color);
+      }
+
+      .data-panel {
+        padding: 1.5rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .weather-icon-lg {
+        width: 100px;
+        height: 100px;
+        filter: drop-shadow(0 0 8px rgba(62, 231, 175, 0.4));
+      }
+
+      .temperature-display {
+        font-size: 4rem;
+        font-weight: 700;
+        line-height: 1;
+        background: linear-gradient(
+          to right,
+          var(--accent-color),
+          var(--secondary-accent)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .weather-stat {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0.8rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .weather-stat:last-child {
+        border-bottom: none;
+      }
+
+      .stat-value {
+        font-weight: 500;
+        color: var(--accent-color);
+      }
+
+      .btn-holographic {
+        background: linear-gradient(
+          135deg,
+          rgba(62, 231, 175, 0.2),
+          rgba(127, 83, 172, 0.2)
+        );
+        border: 1px solid rgba(62, 231, 175, 0.3);
+        color: var(--text-color);
+        border-radius: 50px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .btn-holographic:hover {
+        background: linear-gradient(
+          135deg,
+          rgba(62, 231, 175, 0.3),
+          rgba(127, 83, 172, 0.3)
+        );
+        border: 1px solid rgba(62, 231, 175, 0.6);
+        color: white;
+        box-shadow: var(--neon-glow);
+      }
+
+      .btn-holographic::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: all 0.6s ease;
+      }
+
+      .btn-holographic:hover::before {
+        left: 100%;
+      }
+
+      .advice-panel {
+        border-left: 3px solid var(--accent-color);
+        background: rgba(62, 231, 175, 0.05);
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+      }
+
+      .advice-panel::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+          circle at bottom right,
+          rgba(62, 231, 175, 0.15),
+          transparent 70%
+        );
+        z-index: -1;
+      }
+
+      .advice-icon {
+        font-size: 2.2rem;
+        background: linear-gradient(
+          135deg,
+          var(--accent-color),
+          var(--secondary-accent)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        margin-bottom: 1rem;
+      }
+
+      .forecast-item {
+        text-align: center;
+        padding: 1rem 0.5rem;
+        position: relative;
+      }
+
+      .forecast-item:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 20%;
+        height: 60%;
+        width: 1px;
+        background: linear-gradient(
+          to bottom,
+          transparent,
+          rgba(255, 255, 255, 0.1),
+          transparent
+        );
+      }
+
+      .forecast-hour {
+        font-weight: 500;
+        color: var(--accent-color);
+        margin-bottom: 0.5rem;
+      }
+
+      .forecast-temp {
+        font-size: 1.2rem;
+        font-weight: 600;
+      }
+
+      .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 12, 41, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        backdrop-filter: blur(5px);
+      }
+
+      .hexagon {
+        position: relative;
+        width: 60px;
+        height: 35px;
+        background: rgba(62, 231, 175, 0.2);
+        border: 1px solid rgba(62, 231, 175, 0.8);
+        margin: 17.5px 0;
+      }
+
+      .hexagon:before,
+      .hexagon:after {
+        content: "";
+        position: absolute;
+        width: 0;
+        border-left: 30px solid transparent;
+        border-right: 30px solid transparent;
+      }
+
+      .hexagon:before {
+        bottom: 100%;
+        border-bottom: 17.5px solid rgba(62, 231, 175, 0.2);
+      }
+
+      .hexagon:after {
+        top: 100%;
+        width: 0;
+        border-top: 17.5px solid rgba(62, 231, 175, 0.2);
+      }
+
+      .hexagon .inner {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        z-index: 1;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(62, 231, 175, 0.4) inset;
+        }
+        50% {
+          box-shadow: 0 0 0 10px rgba(62, 231, 175, 0) inset;
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(62, 231, 175, 0) inset;
+        }
+      }
+
+      .error-message {
+        color: #ff6b6b;
+        background: rgba(255, 107, 107, 0.1);
+        border-left: 3px solid #ff6b6b;
+        padding: 1rem;
+      }
+
+      .highlight {
+        background: linear-gradient(
+          90deg,
+          var(--accent-color),
+          var(--secondary-accent)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        font-weight: 600;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .info-cell {
+        background-color: var(--card-bg);
+        padding: 1rem;
+        text-align: center;
+      }
+
+      .info-value {
+        font-size: 1.2rem;
+        color: var(--accent-color);
+        font-weight: 500;
+      }
+
+      .scanline {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 15;
+        opacity: 0.2;
+      }
+
+      .scanline::before {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 1px;
+        background: rgba(62, 231, 175, 0.5);
+        animation: scanline 6s linear infinite;
+      }
+
+      @keyframes scanline {
+        0% {
+          top: -100%;
+        }
+        100% {
+          top: 100%;
+        }
+      }
+
+      .animate-fade-in {
+        animation: fadeIn 0.8s ease forwards;
+        opacity: 0;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      #hourlyScroll {
+        overflow-x: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--accent-color) rgba(255, 255, 255, 0.05);
+      }
+
+      #hourlyScroll::-webkit-scrollbar {
+        height: 6px;
+      }
+
+      #hourlyScroll::-webkit-scrollbar-thumb {
+        background-color: var(--accent-color);
+        border-radius: 6px;
+      }
+
+      #hourlyScroll::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid-lines"></div>
+
+    <header class="header mb-4">
+      <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="logo">
+            <i class="fas fa-satellite-dish me-2 neon-accent"></i>
+            <span>Weather Time Companion</span>
+          </div>
+          <div class="search-container d-none d-md-block">
+            <i class="fas fa-search search-icon"></i>
+            <input
+              type="text"
+              id="citySearch"
+              class="form-control search-input"
+              placeholder="Enter city name..."
+            />
+          </div>
+        </div>
+        <div class="d-md-none mt-3">
+          <div class="search-container w-100">
+            <i class="fas fa-search search-icon"></i>
+            <input
+              type="text"
+              id="citySearchMobile"
+              class="form-control search-input"
+              placeholder="Enter city name..."
+            />
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="container mb-5">
+      <div id="errorContainer" class="mb-4 d-none"></div>
+
+      <div class="row mb-4">
+        <!-- Current Weather Panel -->
+        <div class="col-lg-8 mb-4">
+          <div class="holographic-container h-100">
+            <div class="position-relative h-100">
+              <div id="weatherLoading" class="loading-overlay">
+                <div class="hexagon">
+                  <div class="inner"></div>
+                </div>
+              </div>
+              <div id="weatherContent" class="data-panel d-none">
+                <div
+                  class="d-flex justify-content-between align-items-center mb-4"
+                >
+                  <div>
+                    <h2 id="cityName" class="mb-0">--</h2>
+                    <p id="localTime" class="mb-0 text-light">--</p>
+                  </div>
+                  <button id="getLocation" class="btn btn-holographic">
+                    <i class="fas fa-location-crosshairs me-2"></i>Current
+                    Location
+                  </button>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-3">
+                      <img
+                        id="weatherIcon"
+                        src="/api/placeholder/100/100"
+                        alt="Weather"
+                        class="weather-icon-lg me-3"
+                      />
+                      <div>
+                        <p class="temperature-display mb-0" id="temperature">
+                          --°
+                        </p>
+                        <p id="weatherCondition" class="mb-0">--</p>
+                      </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3">
+                      <div>
+                        <span class="neon-accent"
+                          ><i class="fas fa-temperature-high me-1"></i>
+                          High</span
+                        >
+                        <p class="mb-0" id="maxTemp">--°C</p>
+                      </div>
+                      <div>
+                        <span class="neon-accent"
+                          ><i class="fas fa-temperature-low me-1"></i> Low</span
+                        >
+                        <p class="mb-0" id="minTemp">--°C</p>
+                      </div>
+                      <div>
+                        <span class="neon-accent"
+                          ><i class="fas fa-thermometer-half me-1"></i>
+                          Feels</span
+                        >
+                        <p class="mb-0" id="feelsLike">--°C</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="weather-stat">
+                      <span
+                        ><i class="fas fa-wind me-2 neon-accent"></i> Wind</span
+                      >
+                      <span class="stat-value" id="windSpeed">-- km/h</span>
+                    </div>
+                    <div class="weather-stat">
+                      <span
+                        ><i class="fas fa-tint me-2 neon-accent"></i>
+                        Humidity</span
+                      >
+                      <span class="stat-value" id="humidity">--%</span>
+                    </div>
+                    <div class="weather-stat">
+                      <span
+                        ><i class="fas fa-compress-alt me-2 neon-accent"></i>
+                        Pressure</span
+                      >
+                      <span class="stat-value" id="pressure">-- mb</span>
+                    </div>
+                    <div class="weather-stat">
+                      <span
+                        ><i class="fas fa-eye me-2 neon-accent"></i>
+                        Visibility</span
+                      >
+                      <span class="stat-value" id="visibility">-- km</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="scanline"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Advice Panel -->
+        <div class="col-lg-4 mb-4">
+          <div class="holographic-container h-100">
+            <div class="position-relative h-100">
+              <div id="adviceLoading" class="loading-overlay">
+                <div class="hexagon">
+                  <div class="inner"></div>
+                </div>
+              </div>
+              <div id="adviceContent" class="advice-panel d-none">
+                <div id="adviceIcon" class="advice-icon">
+                  <i class="fas fa-robot"></i>
+                </div>
+                <h3 class="mb-3">Time & Weather Advisory</h3>
+                <p id="timeAdvice" class="mb-3">--</p>
+                <p id="weatherAdvice" class="mb-0">--</p>
+              </div>
+              <div class="scanline"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hourly Forecast -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="holographic-container">
+            <div class="position-relative">
+              <div id="hourlyLoading" class="loading-overlay">
+                <div class="hexagon">
+                  <div class="inner"></div>
+                </div>
+              </div>
+              <div id="hourlyContent" class="d-none p-3">
+                <h3 class="mb-3">
+                  <i class="fas fa-clock me-2 neon-accent"></i> Hourly Forecast
+                </h3>
+                <div id="hourlyScroll">
+                  <div id="hourlyForecast" class="d-flex">
+                    <!-- Will be populated by JavaScript -->
+                  </div>
+                </div>
+              </div>
+              <div class="scanline"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Info -->
+      <div class="row">
+        <div class="col-md-6 mb-4">
+          <div class="holographic-container">
+            <div class="position-relative p-3">
+              <h3 class="mb-3">
+                <i class="fas fa-sun me-2 neon-accent"></i> Astro Data
+              </h3>
+              <div class="info-grid">
+                <div class="info-cell">
+                  <p class="mb-1">Sunrise</p>
+                  <p class="info-value mb-0" id="sunrise">--</p>
+                </div>
+                <div class="info-cell">
+                  <p class="mb-1">Sunset</p>
+                  <p class="info-value mb-0" id="sunset">--</p>
+                </div>
+                <div class="info-cell">
+                  <p class="mb-1">UV Index</p>
+                  <p class="info-value mb-0" id="uvIndex">--</p>
+                </div>
+                <div class="info-cell">
+                  <p class="mb-1">Moonrise</p>
+                  <p class="info-value mb-0" id="moonrise">--</p>
+                </div>
+                <div class="info-cell">
+                  <p class="mb-1">Moonset</p>
+                  <p class="info-value mb-0" id="moonset">--</p>
+                </div>
+                <div class="info-cell">
+                  <p class="mb-1">Moon Phase</p>
+                  <p class="info-value mb-0" id="moonPhase">--</p>
+                </div>
+              </div>
+              <div class="scanline"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+          <div class="holographic-container">
+            <div class="position-relative p-3">
+              <h3 class="mb-3">
+                <i class="fas fa-cloud-rain me-2 neon-accent"></i> Precipitation
+              </h3>
+              <div class="info-grid">
+                <div class="info-cell">
+                  <p class="mb-1">Chance of Rain</p>
+                  <p class="info-value mb-0" id="chanceOfRain">--%</p>
+                </div>
+                <div class="info-cell">
+                  <p class="mb-1">Precipitation</p>
+                  <p class="info-value mb-0" id="precipitation">-- mm</p>
+                </div>
+                <div class="info-cell">
+                  <p class="mb-1">Cloud Cover</p>
+                  <p class="info-value mb-0" id="cloudCover">--%</p>
+                </div>
+                <div class="info-cell">
+                  <p class="mb-1">Wind Direction</p>
+                  <p class="info-value mb-0" id="windDirection">--</p>
+                </div>
+                <div class="info-cell">
+                  <p class="mb-1">Wind Gust</p>
+                  <p class="info-value mb-0" id="windGust">-- km/h</p>
+                </div>
+                <div class="info-cell">
+                  <p class="mb-1">Air Quality</p>
+                  <p class="info-value mb-0" id="airQuality">--</p>
+                </div>
+              </div>
+              <div class="scanline"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>  
+      
+  </body>
+</html>
