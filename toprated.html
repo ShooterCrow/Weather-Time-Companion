@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieFlix - Top Rated Movies</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .navbar-custom {
+            background-color: #032541;
+        }
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
+            color: white;
+        }
+        .navbar-custom .nav-link.active {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        footer {
+            background-color: #032541;
+            color: white;
+            padding: 20px 0;
+        }
+        .page-header {
+            background: linear-gradient(rgba(3, 37, 65, 0.8), rgba(3, 37, 65, 0.8)), url('/api/placeholder/1200/400');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 60px 0;
+        }
+        .movie-card {
+            transition: transform 0.3s;
+            height: 100%;
+        }
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .rating-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #032541;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid #ffc107;
+        }
+        .card-img-top {
+            height: 350px;
+            object-fit: cover;
+        }
+        .filters {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .genre-badge {
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.2s;
+        }
+        .genre-badge.active {
+            background-color: #032541;
+            color: white;
+        }
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 300px;
+        }
+        #loadMoreBtn {
+            margin: 30px auto;
+            display: block;
+        }
+        .year-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+        }
+        #noResultsMessage {
+            text-align: center;
+            padding: 50px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="index.html"><i class="fas fa-film me-2"></i>MovieFlix</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html"><i class="fas fa-home me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#"><i class="fas fa-star me-1"></i>Top Rated</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="genres.html"><i class="fas fa-list me-1"></i>Genres</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="page-header">
+        <div class="container text-center">
+            <h1 class="display-4">Top Rated Movies</h1>
+            <p class="lead">Discover the highest-rated films of all time</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container py-5">
+        <!-- Filters Section -->
+        <div class="filters">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <h5><i class="fas fa-filter me-2"></i>Filter Options</h5>
+                    <div class="mb-3">
+                        <label for="yearRange" class="form-label">Year Range:</label>
+                        <div class="d-flex align-items-center">
+                            <input type="number" id="yearFrom" class="form-control form-control-sm me-2" placeholder="From" min="1900" max="2025" value="1900">
+                            <span>to</span>
+                            <input type="number" id="yearTo" class="form-control form-control-sm ms-2" placeholder="To" min="1900" max="2025" value="2025">
+                            <button id="applyYearFilter" class="btn btn-sm btn-primary ms-2">Apply</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label">Rating:</label>
+                        <div class="d-flex align-items-center">
+                            <input type="number" id="minRating" class="form-control form-control-sm" placeholder="Min Rating" min="1" max="10" step="0.1" value="8.0">
+                            <span class="mx-2">and above</span>
+                            <button id="applyRatingFilter" class="btn btn-sm btn-primary ms-2">Apply</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5><i class="fas fa-sort me-2"></i>Sort By</h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-secondary active" data-sort="rating-desc">Rating (High to Low)</button>
+                        <button type="button" class="btn btn-outline-secondary" data-sort="rating-asc">Rating (Low to High)</button>
+                        <button type="button" class="btn btn-outline-secondary" data-sort="year-desc">Year (Newest)</button>
+                        <button type="button" class="btn btn-outline-secondary" data-sort="year-asc">Year (Oldest)</button>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div>
+                <h5><i class="fas fa-film me-2"></i>Popular Genres</h5>
+                <div id="genreFilters">
+                    <span class="badge bg-secondary genre-badge" data-genre="Action">Action</span>
+                    <span class="badge bg-secondary genre-badge" data-genre="Drama">Drama</span>
+                    <span class="badge bg-secondary genre-badge" data-genre="Comedy">Comedy</span>
+                    <span class="badge bg-secondary genre-badge" data-genre="Thriller">Thriller</span>
+                    <span class="badge bg-secondary genre-badge" data-genre="Sci-Fi">Sci-Fi</span>
+                    <span class="badge bg-secondary genre-badge" data-genre="Horror">Horror</span>
+                    <span class="badge bg-secondary genre-badge" data-genre="Romance">Romance</span>
+                    <span class="badge bg-secondary genre-badge" data-genre="Adventure">Adventure</span>
+                    <span class="badge bg-secondary genre-badge" data-genre="Crime">Crime</span>
+                    <span class="badge bg-secondary genre-badge" data-genre="Mystery">Mystery</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- No Results Message (hidden by default) -->
+        <div id="noResultsMessage" class="d-none">
+            <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+            <h3>No Movies Found</h3>
+            <p>Try adjusting your filters or search criteria</p>
+            <button id="resetFiltersBtn" class="btn btn-primary mt-2">Reset All Filters</button>
+        </div>
+
+        <!-- Movies Grid -->
+        <div id="moviesGrid" class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            <!-- Movie cards will be dynamically added here -->
+        </div>
+
+        <!-- Load More Button -->
+        <button id="loadMoreBtn" class="btn btn-lg btn-outline-primary d-none">
+            Load More Movies
+        </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>MovieFlix</h5>
+                    <p>Your ultimate movie catalog experience</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="index.html" class="text-white">Home</a></li>
+                        <li><a class="text-white" href="genres.html">Genres</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Connect With Us</h5>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <p>&copy; 2025 MovieFlix. All rights reserved.</p>
+                <p>Made with ❤️ by <a href="https://github.com/ShooterCrow">Victor</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const apiKey = 'be19a63';
+            const moviesGrid = document.getElementById('moviesGrid');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            const noResultsMessage = document.getElementById('noResultsMessage');
+            const genreButtons = document.querySelectorAll('.genre-badge');
+            const sortButtons = document.querySelectorAll('[data-sort]');
+            const yearFromInput = document.getElementById('yearFrom');
+            const yearToInput = document.getElementById('yearTo');
+            const minRatingInput = document.getElementById('minRating');
+            const applyYearFilterBtn = document.getElementById('applyYearFilter');
+            const applyRatingFilterBtn = document.getElementById('applyRatingFilter');
+            const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+            
+            // Default top rated movies and current filters
+            const topRatedMovies = [
+                'The Shawshank Redemption', 'The Godfather', 'The Dark Knight', 
+                'The Godfather: Part II', '12 Angry Men', "Schindler's List", 
+                'The Lord of the Rings: The Return of the King', 'Pulp Fiction', 
+                'The Lord of the Rings: The Fellowship of the Ring', 'Forrest Gump',
+                'Inception', 'Fight Club', 'The Matrix', 'Goodfellas',
+                'One Flew Over the Cuckoo\'s Nest', 'Se7en', 'It\'s a Wonderful Life',
+                'The Silence of the Lambs', 'Saving Private Ryan', 'Interstellar',
+                'City of God', 'Life Is Beautiful', 'The Green Mile', 'Star Wars: Episode IV',
+                'Terminator 2: Judgment Day', 'Back to the Future', 'Psycho', 'The Pianist',
+                'Gladiator', 'The Departed', 'Whiplash', 'The Prestige',
+                'The Lion King', 'The Usual Suspects', 'Grave of the Fireflies', 'Alien',
+                'Cinema Paradiso', 'Sunset Boulevard', 'Dr. Strangelove', 'The Great Dictator'
+            ];
+            
+            let allMovies = [];
+            let displayedMovies = [];
+            let currentPage = 1;
+            const moviesPerPage = 8;
+            let activeFilters = {
+                genres: [],
+                yearFrom: 1900,
+                yearTo: 2025,
+                minRating: 8.0,
+                sort: 'rating-desc'
+            };
+
+            // Initialize page
+            loadTopRatedMovies();
+
+            // Event listeners for filters
+            genreButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    updateGenreFilters();
+                    filterAndSortMovies();
+                });
+            });
+
+            sortButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    sortButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    activeFilters.sort = this.dataset.sort;
+                    filterAndSortMovies();
+                });
+            });
+
+            applyYearFilterBtn.addEventListener('click', function() {
+                const fromYear = parseInt(yearFromInput.value) || 1900;
+                const toYear = parseInt(yearToInput.value) || 2025;
+                
+                if (fromYear > toYear) {
+                    alert('Starting year must be less than or equal to ending year');
+                    return;
+                }
+                
+                activeFilters.yearFrom = fromYear;
+                activeFilters.yearTo = toYear;
+                filterAndSortMovies();
+            });
+
+            applyRatingFilterBtn.addEventListener('click', function() {
+                const rating = parseFloat(minRatingInput.value) || 0;
+                if (rating < 0 || rating > 10) {
+                    alert('Rating must be between 0 and 10');
+                    return;
+                }
+                
+                activeFilters.minRating = rating;
+                filterAndSortMovies();
+            });
+
+            resetFiltersBtn.addEventListener('click', function() {
+                // Reset all filters to default
+                yearFromInput.value = 1900;
+                yearToInput.value = 2025;
+                minRatingInput.value = 8.0;
+                
+                genreButtons.forEach(btn => btn.classList.remove('active'));
+                
+                sortButtons.forEach(btn => {
+                    if (btn.dataset.sort === 'rating-desc') {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                activeFilters = {
+                    genres: [],
+                    yearFrom: 1900,
+                    yearTo: 2025,
+                    minRating: 8.0,
+                    sort: 'rating-desc'
+                };
+                
+                filterAndSortMovies();
+            });
+
+            loadMoreBtn.addEventListener('click', function() {
+                currentPage++;
+                displayMovies();
+            });
+
+            function updateGenreFilters() {
+                activeFilters.genres = [];
+                document.querySelectorAll('.genre-badge.active').forEach(btn => {
+                    activeFilters.genres.push(btn.dataset.genre);
+                });
+            }
+
+            // Load the top rated movies data
+            async function loadTopRatedMovies() {
+                loadingSpinner.classList.remove('d-none');
+                moviesGrid.innerHTML = '';
+                
+                try {
+                    const moviePromises = topRatedMovies.map(title => 
+                        fetch(`https://www.omdbapi.com/?t=${encodeURIComponent(title)}&apikey=${apiKey}`)
+                        .then(response => response.json())
+                    );
+                    
+                    const results = await Promise.all(moviePromises);
+                    
+                    allMovies = results.filter(movie => movie.Response === "True").map(movie => {
+                        return {
+                            id: movie.imdbID,
+                            title: movie.Title,
+                            year: parseInt(movie.Year) || 0,
+                            rating: parseFloat(movie.imdbRating) || 0,
+                            poster: movie.Poster,
+                            genres: movie.Genre ? movie.Genre.split(', ') : []
+                        };
+                    });
+                    
+                    filterAndSortMovies();
+                } catch (error) {
+                    console.error('Error loading movies:', error);
+                    loadingSpinner.classList.add('d-none');
+                    moviesGrid.innerHTML = `
+                        <div class="col-12 text-center">
+                            <div class="alert alert-danger">
+                                Failed to load movies. Please try again later.
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Filter and sort movies based on active filters
+            function filterAndSortMovies() {
+                // Reset page when filters change
+                currentPage = 1;
+                
+                // Apply filters
+                displayedMovies = allMovies.filter(movie => {
+                    // Year filter
+                    if (movie.year < activeFilters.yearFrom || movie.year > activeFilters.yearTo) {
+                        return false;
+                    }
+                    
+                    // Rating filter
+                    if (movie.rating < activeFilters.minRating) {
+                        return false;
+                    }
+                    
+                    // Genre filter
+                    if (activeFilters.genres.length > 0) {
+                        // Check if movie has at least one of the selected genres
+                        const hasSelectedGenre = movie.genres.some(genre => 
+                            activeFilters.genres.includes(genre)
+                        );
+                        if (!hasSelectedGenre) {
+                            return false;
+                        }
+                    }
+                    
+                    return true;
+                });
+                
+                // Apply sorting
+                displayedMovies.sort((a, b) => {
+                    switch(activeFilters.sort) {
+                        case 'rating-desc':
+                            return b.rating - a.rating;
+                        case 'rating-asc':
+                            return a.rating - b.rating;
+                        case 'year-desc':
+                            return b.year - a.year;
+                        case 'year-asc':
+                            return a.year - b.year;
+                        default:
+                            return b.rating - a.rating;
+                    }
+                });
+                
+                // Display the movies
+                displayMovies();
+            }
+
+            // Display movies with pagination
+            function displayMovies() {
+                loadingSpinner.classList.add('d-none');
+                
+                if (displayedMovies.length === 0) {
+                    moviesGrid.innerHTML = '';
+                    noResultsMessage.classList.remove('d-none');
+                    loadMoreBtn.classList.add('d-none');
+                    return;
+                }
+                
+                noResultsMessage.classList.add('d-none');
+                
+                // Clear the grid if this is the first page
+                if (currentPage === 1) {
+                    moviesGrid.innerHTML = '';
+                }
+                
+                // Calculate start and end indices for current page
+                const startIndex = (currentPage - 1) * moviesPerPage;
+                const endIndex = Math.min(startIndex + moviesPerPage, displayedMovies.length);
+                
+                // Display movies for current page
+                for (let i = startIndex; i < endIndex; i++) {
+                    const movie = displayedMovies[i];
+                    const poster = movie.poster !== "N/A" ? movie.poster : '/api/placeholder/300/450';
+                    
+                    const movieCard = document.createElement('div');
+                    movieCard.className = 'col';
+                    movieCard.innerHTML = `
+                        <div class="card movie-card">
+                            <div class="position-relative">
+                                <img src="${poster}" class="card-img-top" alt="${movie.title}">
+                                <span class="rating-badge">${movie.rating}</span>
+                                <span class="year-badge">${movie.year}</span>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">${movie.title}</h5>
+                                <p class="card-text">
+                                    <small class="text-muted">${movie.genres.join(', ')}</small>
+                                </p>
+                                <a href="movie-details.html?id=${movie.id}" class="btn btn-sm btn-primary">View Details</a>
+                            </div>
+                        </div>
+                    `;
+                    
+                    moviesGrid.appendChild(movieCard);
+                }
+                
+                // Show or hide load more button
+                if (endIndex < displayedMovies.length) {
+                    loadMoreBtn.classList.remove('d-none');
+                } else {
+                    loadMoreBtn.classList.add('d-none');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

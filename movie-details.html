@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieFlix - Movie Details</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .navbar-custom {
+            background-color: #032541;
+        }
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
+            color: white;
+        }
+        footer {
+            background-color: #032541;
+            color: white;
+            padding: 20px 0;
+        }
+        .movie-backdrop {
+            background: linear-gradient(rgba(3, 37, 65, 0.8), rgba(3, 37, 65, 0.8)), url('/api/placeholder/1200/400');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 60px 0;
+        }
+        .movie-poster {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .movie-info {
+            position: relative;
+        }
+        .rating-badge {
+            position: absolute;
+            top: -20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #032541;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: 3px solid #ffc107;
+        }
+        .detail-section {
+            margin-bottom: 30px;
+        }
+        .cast-card {
+            width: 150px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .cast-img {
+            height: 150px;
+            object-fit: cover;
+        }
+        .cast-scroll {
+            display: flex;
+            overflow-x: auto;
+            padding-bottom: 15px;
+        }
+        .badge-custom {
+            background-color: #032541;
+            color: white;
+            margin-right: 5px;
+            padding: 5px 10px;
+            font-size: 0.9rem;
+        }
+        #loading {
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #error-message {
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .similar-movies {
+            display: flex;
+            overflow-x: auto;
+            padding-bottom: 15px;
+        }
+        .similar-movie-card {
+            width: 180px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .similar-movie-img {
+            height: 270px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="index.html"><i class="fas fa-film me-2"></i>MovieFlix</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html"><i class="fas fa-home me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="toprated.html"><i class="fas fa-star me-1"></i>Top Rated</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="genres.html"><i class="fas fa-list me-1"></i>Genres</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Movie Detail Content -->
+    <div id="movie-content">
+        <!-- Loading spinner -->
+        <div id="loading" class="text-center py-5">
+            <div>
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3">Loading movie details...</p>
+            </div>
+        </div>
+
+        <!-- Error message (hidden by default) -->
+        <div id="error-message" class="alert alert-danger my-5 d-none">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span id="error-text">Error loading movie details</span>
+        </div>
+        
+        <!-- Movie content will be inserted here by JavaScript -->
+        <div id="movie-details" class="d-none"></div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>MovieFlix</h5>
+                    <p>Your ultimate movie catalog experience</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="index.html" class="text-white">Home</a></li>
+                        <li><a class="text-white" href="genres.html">Genres</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Connect With Us</h5>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <p>&copy; 2025 MovieFlix. All rights reserved.</p>
+                <p>Made with ❤️ by <a href="https://github.com/ShooterCrow">Victor</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const apiKey = 'be19a63';
+            const loadingDiv = document.getElementById('loading');
+            const errorDiv = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            const movieDetailsDiv = document.getElementById('movie-details');
+            
+            // Get movie ID from URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const movieId = urlParams.get('id');
+            
+            if (!movieId) {
+                showError('No movie ID specified. Please return to the homepage and select a movie.');
+                return;
+            }
+            
+            // Fetch movie details
+            fetch(`https://www.omdbapi.com/?i=${movieId}&plot=full&apikey=${apiKey}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(movie => {
+                    if (movie.Response === "True") {
+                        displayMovieDetails(movie);
+                    } else {
+                        showError(`Movie not found: ${movie.Error}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching movie details:', error);
+                    showError('Failed to load movie details. Please try again later.');
+                });
+                
+            // Function to display movie details
+            function displayMovieDetails(movie) {
+                // Generate random rating for "similar movies" since OMDB doesn't provide that
+                const randomSimilarMovies = [
+                    'The Matrix', 'Inception', 'Interstellar', 
+                    'The Dark Knight', 'Pulp Fiction', 'Forrest Gump'
+                ];
+                
+                // Format and display main content
+                document.title = `MovieFlix - ${movie.Title}`;
+                
+                const content = `
+                    <!-- Movie Backdrop -->
+                    <div class="movie-backdrop">
+                        <div class="container">
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="index.html" class="text-white">Home</a></li>
+                                    <li class="breadcrumb-item active text-white" aria-current="page">${movie.Title}</li>
+                                </ol>
+                            </nav>
+                            <div class="row">
+                                <div class="col-md-3 mb-4">
+                                    <img src="${movie.Poster !== 'N/A' ? movie.Poster : '/api/placeholder/300/450'}" class="movie-poster" alt="${movie.Title}">
+                                </div>
+                                <div class="col-md-9 movie-info">
+                                    <div class="rating-badge">
+                                        ${movie.imdbRating !== 'N/A' ? movie.imdbRating : '?'}
+                                    </div>
+                                    <h1>${movie.Title} <span class="text-muted">(${movie.Year})</span></h1>
+                                    <p>
+                                        <span class="badge bg-light text-dark">${movie.Rated !== 'N/A' ? movie.Rated : 'Not Rated'}</span> | 
+                                        <span>${movie.Runtime !== 'N/A' ? movie.Runtime : 'Unknown runtime'}</span> | 
+                                        <span>${movie.Released !== 'N/A' ? movie.Released : 'Unknown release date'}</span>
+                                    </p>
+                                    <div class="mb-3">
+                                        ${movie.Genre.split(', ').map(genre => 
+                                            `<span class="badge badge-custom">${genre}</span>`
+                                        ).join('')}
+                                    </div>
+                                    <div class="mb-4">
+                                        <h5>Overview</h5>
+                                        <p>${movie.Plot !== 'N/A' ? movie.Plot : 'No plot description available.'}</p>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <strong>Director:</strong>
+                                            <p>${movie.Director !== 'N/A' ? movie.Director : 'Unknown'}</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <strong>Writer:</strong>
+                                            <p>${movie.Writer !== 'N/A' ? movie.Writer : 'Unknown'}</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <strong>Box Office:</strong>
+                                            <p>${movie.BoxOffice !== 'N/A' ? movie.BoxOffice : 'Not available'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Info -->
+                    <div class="container py-5">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <!-- Cast Section -->
+                                <div class="detail-section">
+                                    <h3>Cast</h3>
+                                    <div class="cast-scroll">
+                                        ${movie.Actors.split(', ').map(actor => `
+                                            <div class="card cast-card">
+                                                <img src="/api/placeholder/150/150" class="card-img-top cast-img" alt="${actor}">
+                                                <div class="card-body p-2">
+                                                    <p class="card-title small fw-bold mb-0">${actor}</p>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                
+                                <!-- Ratings Section -->
+                                <div class="detail-section">
+                                    <h3>Ratings</h3>
+                                    <div class="row">
+                                        ${movie.Ratings && movie.Ratings.length > 0 ? 
+                                            movie.Ratings.map(rating => `
+                                                <div class="col-md-4 mb-3">
+                                                    <div class="card">
+                                                        <div class="card-body">
+                                                            <h5 class="card-title">${rating.Source}</h5>
+                                                            <p class="card-text fs-4 fw-bold">${rating.Value}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `).join('') : 
+                                            '<div class="col-12"><p>No ratings available</p></div>'
+                                        }
+                                    </div>
+                                </div>
+                                
+                                <!-- Similar Movies Section -->
+                                <div class="detail-section">
+                                    <h3>Similar Movies You Might Like</h3>
+                                    <div class="similar-movies">
+                                        ${randomSimilarMovies.filter(title => title !== movie.Title).slice(0, 5).map(title => `
+                                            <div class="card similar-movie-card">
+                                                <img src="/api/placeholder/180/270" class="card-img-top similar-movie-img" alt="${title}">
+                                                <div class="card-body p-2">
+                                                    <h6 class="card-title small mb-0">${title}</h6>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Side Info -->
+                            <div class="col-md-4">
+                                <div class="card mb-4">
+                                    <div class="card-header bg-dark text-white">
+                                        Movie Facts
+                                    </div>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Status</span>
+                                            <span class="badge bg-success">Released</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Language</span>
+                                            <span>${movie.Language !== 'N/A' ? movie.Language : 'Unknown'}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Country</span>
+                                            <span>${movie.Country !== 'N/A' ? movie.Country : 'Unknown'}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Awards</span>
+                                            <span>${movie.Awards !== 'N/A' ? movie.Awards : 'None'}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>IMDb Votes</span>
+                                            <span>${movie.imdbVotes !== 'N/A' ? movie.imdbVotes : '0'}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Production</span>
+                                            <span>${movie.Production !== 'N/A' ? movie.Production : 'Unknown'}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span>Website</span>
+                                            <span>${movie.Website !== 'N/A' ? 
+                                                `<a href="#" class="text-primary">Visit</a>` : 
+                                                'None'}
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <!-- Action buttons -->
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary">
+                                        <i class="fas fa-bookmark me-2"></i>Add to Watchlist
+                                    </button>
+                                    <button class="btn btn-outline-secondary">
+                                        <i class="fas fa-star me-2"></i>Rate this Movie
+                                    </button>
+                                    <button class="btn btn-outline-danger">
+                                        <i class="fas fa-share-alt me-2"></i>Share
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Show content
+                loadingDiv.classList.add('d-none');
+                movieDetailsDiv.innerHTML = content;
+                movieDetailsDiv.classList.remove('d-none');
+            }
+            
+            // Show error message
+            function showError(message) {
+                loadingDiv.classList.add('d-none');
+                errorText.textContent = message;
+                errorDiv.classList.remove('d-none');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieFlix - Movie Genres</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .navbar-custom {
+            background-color: #032541;
+        }
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
+            color: white;
+        }
+        .navbar-custom .nav-link.active {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        footer {
+            background-color: #032541;
+            color: white;
+            padding: 20px 0;
+        }
+        .page-header {
+            background: linear-gradient(rgba(3, 37, 65, 0.8), rgba(3, 37, 65, 0.8)), url('/api/placeholder/1200/400');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 60px 0;
+        }
+        .genre-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 200px;
+        }
+        .genre-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+        .genre-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .genre-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.7));
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px;
+            color: white;
+        }
+        .genre-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .genre-count {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .genre-featured {
+            margin-top: 50px;
+        }
+        .featured-header {
+            border-bottom: 2px solid #032541;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .movie-card {
+            transition: transform 0.3s;
+            height: 100%;
+            margin-bottom: 20px;
+        }
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .card-img-top {
+            height: 300px;
+            object-fit: cover;
+        }
+        .rating-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #032541;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid #ffc107;
+            font-size: 0.8rem;
+        }
+        .genre-btn:hover, .genre-card:hover {
+            cursor: pointer;
+        }
+        #genreMoviesSection {
+            display: none;
+        }
+        .back-to-genres {
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        .genre-btn {
+            border: none;
+        }
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="index.html"><i class="fas fa-film me-2"></i>MovieFlix</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html"><i class="fas fa-home me-1"></i>Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="top-rated.html"><i class="fas fa-star me-1"></i>Top Rated</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#"><i class="fas fa-list me-1"></i>Genres</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="page-header">
+        <div class="container text-center">
+            <h1 class="display-4">Movie Genres</h1>
+            <p class="lead">Explore movies by your favorite genres</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container py-5">
+        <!-- All Genres Section -->
+        <div id="allGenresSection">
+            <div class="row">
+                <div class="col-md-6 col-lg-4">
+                    <div class="genre-card genre-btn" data-genre="Action">
+                        <img src="/api/placeholder/400/200" class="genre-image" alt="Action">
+                        <div class="genre-overlay">
+                            <div class="genre-title">Action</div>
+                            <div class="genre-count">Exciting, fast-paced movies</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="genre-card genre-btn" data-genre="Drama">
+                        <img src="/api/placeholder/400/200" class="genre-image" alt="Drama">
+                        <div class="genre-overlay">
+                            <div class="genre-title">Drama</div>
+                            <div class="genre-count">Character-driven narratives</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="genre-card genre-btn" data-genre="Comedy">
+                        <img src="/api/placeholder/400/200" class="genre-image" alt="Comedy">
+                        <div class="genre-overlay">
+                            <div class="genre-title">Comedy</div>
+                            <div class="genre-count">Humorous and entertaining</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="genre-card genre-btn" data-genre="Sci-Fi">
+                        <img src="/api/placeholder/400/200" class="genre-image" alt="Sci-Fi">
+                        <div class="genre-overlay">
+                            <div class="genre-title">Sci-Fi</div>
+                            <div class="genre-count">Futuristic and speculative</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="genre-card genre-btn" data-genre="Horror">
+                        <img src="/api/placeholder/400/200" class="genre-image" alt="Horror">
+                        <div class="genre-overlay">
+                            <div class="genre-title">Horror</div>
+                            <div class="genre-count">Frightening and suspenseful</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="genre-card genre-btn" data-genre="Romance">
+                        <img src="/api/placeholder/400/200" class="genre-image" alt="Romance">
+                        <div class="genre-overlay">
+                            <div class="genre-title">Romance</div>
+                            <div class="genre-count">Love stories and relationships</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="genre-card genre-btn" data-genre="Thriller">
+                        <img src="/api/placeholder/400/200" class="genre-image" alt="Thriller">
+                        <div class="genre-overlay">
+                            <div class="genre-title">Thriller</div>
+                            <div class="genre-count">Suspenseful and exciting</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="genre-card genre-btn" data-genre="Animation">
+                        <img src="/api/placeholder/400/200" class="genre-image" alt="Animation">
+                        <div class="genre-overlay">
+                            <div class="genre-title">Animation</div>
+                            <div class="genre-count">Animated features and shorts</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="genre-card genre-btn" data-genre="Adventure">
+                        <img src="/api/placeholder/400/200" class="genre-image" alt="Adventure">
+                        <div class="genre-overlay">
+                            <div class="genre-title">Adventure</div>
+                            <div class="genre-count">Epic journeys and quests</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="genre-card genre-btn" data-genre="Fantasy">
+                        <img src="/api/placeholder/400/200" class="genre-image" alt="Fantasy">
+                        <div class="genre-overlay">
+                            <div class="genre-title">Fantasy</div>
+                            <div class="genre-count">Magical and otherworldly</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="genre-card genre-btn" data-genre="Mystery">
+                        <img src="/api/placeholder/400/200" class="genre-image" alt="Mystery">
+                        <div class="genre-overlay">
+                            <div class="genre-title">Mystery</div>
+                            <div class="genre-count">Puzzling and intriguing</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="genre-card genre-btn" data-genre="Crime">
+                        <img src="/api/placeholder/400/200" class="genre-image" alt="Crime">
+                        <div class="genre-overlay">
+                            <div class="genre-title">Crime</div>
+                            <div class="genre-count">Detective stories and heists</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Featured Genre Section -->
+            <div class="genre-featured">
+                <h2 class="featured-header">Featured Genre: Action</h2>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4" id="featuredMovies">
+                    <!-- Loading spinner -->
+                    <div class="col-12 loading-spinner" id="featuredLoadingSpinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <!-- Featured movies will be loaded dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Specific Genre Movies Section (initially hidden) -->
+        <div id="genreMoviesSection">
+            <div class="back-to-genres">
+                <i class="fas fa-arrow-left me-2"></i> Back to All Genres
+            </div>
+            
+            <h2 id="selectedGenreTitle" class="mb-4">Genre Movies</h2>
+            
+            <!-- Loading spinner -->
+            <div class="loading-spinner" id="genreLoadingSpinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4" id="genreMovies">
+                <!-- Genre-specific movies will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>MovieFlix</h5>
+                    <p>Your ultimate movie catalog experience</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="index.html" class="text-white">Home</a></li>
+                        <li><a href="genres.html">Genres</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Connect With Us</h5>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <p>&copy; 2025 MovieFlix. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const apiKey = 'be19a63';
+            const allGenresSection = document.getElementById('allGenresSection');
+            const genreMoviesSection = document.getElementById('genreMoviesSection');
+            const selectedGenreTitle = document.getElementById('selectedGenreTitle');
+            const genreMoviesContainer = document.getElementById('genreMovies');
+            const genreLoadingSpinner = document.getElementById('genreLoadingSpinner');
+            const featuredMoviesContainer = document.getElementById('featuredMovies');
+            const featuredLoadingSpinner = document.getElementById('featuredLoadingSpinner');
+            const backToGenresBtn = document.querySelector('.back-to-genres');
+            
+            // Movie sample collections for each genre
+            const genreMovieSamples = {
+                'Action': ['Die Hard', 'Mad Max: Fury Road', 'John Wick', 'The Matrix', 'Avengers: Endgame', 'Mission: Impossible'],
+                'Drama': ['The Shawshank Redemption', 'Forrest Gump', 'The Godfather', 'Schindler\'s List', 'The Green Mile'],
+                'Comedy': ['The Hangover', 'Superbad', 'Bridesmaids', 'Anchorman', 'Step Brothers', 'Dumb and Dumber'],
+                'Sci-Fi': ['Blade Runner', 'Interstellar', 'Inception', 'The Martian', 'Arrival', 'Dune'],
+                'Horror': ['The Shining', 'Hereditary', 'Get Out', 'A Quiet Place', 'The Exorcist', 'It'],
+                'Romance': ['The Notebook', 'Pride & Prejudice', 'Titanic', 'La La Land', 'Before Sunrise'],
+                'Thriller': ['Se7en', 'The Silence of the Lambs', 'Gone Girl', 'Prisoners', 'No Country for Old Men'],
+                'Animation': ['Toy Story', 'Spirited Away', 'Up', 'Inside Out', 'Spider-Man: Into the Spider-Verse'],
+                'Adventure': ['Indiana Jones', 'The Lord of the Rings', 'Jurassic Park', 'Pirates of the Caribbean'],
+                'Fantasy': ['Harry Potter', 'The Lord of the Rings', 'Pan\'s Labyrinth', 'The Princess Bride'],
+                'Mystery': ['Knives Out', 'The Prestige', 'Memento', 'Shutter Island', 'The Usual Suspects'],
+                'Crime': ['Pulp Fiction', 'The Departed', 'Goodfellas', 'Fargo', 'No Country for Old Men']
+            };
+
+            // Load featured action movies on page load
+            loadFeaturedMovies('Action');
+            
+            // Add event listeners to genre cards
+            document.querySelectorAll('.genre-btn').forEach(card => {
+                card.addEventListener('click', function() {
+                    const genre = this.dataset.genre;
+                    showGenreMovies(genre);
+                });
+            });
+            
+            // Back button event listener
+            backToGenresBtn.addEventListener('click', function() {
+                allGenresSection.style.display = 'block';
+                genreMoviesSection.style.display = 'none';
+            });
+            
+            // Function to load featured movies
+            function loadFeaturedMovies(genre) {
+                featuredLoadingSpinner.style.display = 'flex';
+                featuredMoviesContainer.innerHTML = '';
+                
+                // Get sample movies for the genre
+                const sampleMovies = genreMovieSamples[genre] || genreMovieSamples['Action'];
+                
+                // Only use 4 movies for featured section
+                const featuredSamples = sampleMovies.slice(0, 4);
+                
+                // Fetch movie data
+                const moviePromises = featuredSamples.map(title => 
+                    fetch(`https://www.omdbapi.com/?t=${encodeURIComponent(title)}&apikey=${apiKey}`)
+                    .then(response => response.json())
+                );
+                
+                Promise.all(moviePromises)
+                    .then(movies => {
+                        featuredLoadingSpinner.style.display = 'none';
+                        
+                        movies.forEach(movie => {
+                            if (movie.Response === "True") {
+                                addMovieCard(movie, featuredMoviesContainer);
+                            }
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading featured movies:', error);
+                        featuredLoadingSpinner.style.display = 'none';
+                        featuredMoviesContainer.innerHTML = `
+                            <div class="col-12">
+                                <div class="alert alert-danger">
+                                    Failed to load featured movies. Please try again later.
+                                </div>
+                            </div>
+                        `;
+                    });
+            }
+            
+            // Function to show movies for a specific genre
+            function showGenreMovies(genre) {
+                // Update UI
+                selectedGenreTitle.textContent = `${genre} Movies`;
+                allGenresSection.style.display = 'none';
+                genreMoviesSection.style.display = 'block';
+                genreLoadingSpinner.style.display = 'flex';
+                genreMoviesContainer.innerHTML = '';
+                
+                // Get sample movies for the genre
+                const sampleMovies = genreMovieSamples[genre] || [];
+                
+                if (sampleMovies.length === 0) {
+                    genreLoadingSpinner.style.display = 'none';
+                    genreMoviesContainer.innerHTML = `
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                No movies found for ${genre} genre.
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Fetch movie data
+                const moviePromises = sampleMovies.map(title => 
+                    fetch(`https://www.omdbapi.com/?t=${encodeURIComponent(title)}&apikey=${apiKey}`)
+                    .then(response => response.json())
+                );
+                
+                Promise.all(moviePromises)
+                    .then(movies => {
+                        genreLoadingSpinner.style.display = 'none';
+                        
+                        movies.forEach(movie => {
+                            if (movie.Response === "True") {
+                                addMovieCard(movie, genreMoviesContainer);
+                            }
+                        });
+                    })
+                    .catch(error => {
+                        console.error(`Error loading ${genre} movies:`, error);
+                        genreLoadingSpinner.style.display = 'none';
+                        genreMoviesContainer.innerHTML = `
+                            <div class="col-12">
+                                <div class="alert alert-danger">
+                                    Failed to load ${genre} movies. Please try again later.
+                                </div>
+                            </div>
+                        `;
+                    });
+            }
+            
+            // Function to add a movie card to a container
+            function addMovieCard(movie, container) {
+                const poster = movie.Poster !== "N/A" ? movie.Poster : '/api/placeholder/300/450';
+                const rating = movie.imdbRating !== "N/A" ? movie.imdbRating : "?";
+                
+                const movieCol = document.createElement('div');
+                movieCol.className = 'col';
+                movieCol.innerHTML = `
+                    <div class="card movie-card">
+                        <div class="position-relative">
+                            <img src="${poster}" class="card-img-top" alt="${movie.Title}">
+                            <span class="rating-badge">${rating}</span>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">${movie.Title} (${movie.Year})</h5>
+                            <p class="card-text">
+                                <small class="text-muted">${movie.Genre || 'N/A'}</small>
+                            </p>
+                            <a href="movie-details.html?id=${movie.imdbID}" class="btn btn-sm btn-primary">View Details</a>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(movieCol);
+            }
+        });
+    </script>
+</body>
+</html>
